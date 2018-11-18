@@ -17,7 +17,8 @@
             "MIMode": "gdb",
             "miDebuggerPath": "gdb.exe",
             "sourceFileMap": {
-                "/c/" : "/c:/"
+                "/c/" : "/c:/",
+                "/d/" : "/d:/"
             },
             "setupCommands": [
                 {

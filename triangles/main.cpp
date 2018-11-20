@@ -54,10 +54,12 @@ Vec3f barycentric(Vec2i* t, Vec2i p)
     Vec2i v0 = t[2]-t[0];
     Vec2i v1 = t[2]-t[1];
     Vec2i v2 = p-t[2];
-    auto uv = Vec3i(v0.x, v1.x, v2.x) ^ Vec3i(v0.y, v1.y, v2.y);
-    if (uv.z == 0) return Vec3f(-1,1,1);
-    Vec2f uvs(uv.x/(float)uv.z, uv.y/(float)uv.z);
-    return Vec3f(1.f - uvs.x - uvs.y, uvs.y, uvs.x);
+    auto uv = cross(Vec3i(v0.x, v1.x, v2.x) , Vec3i(v0.y, v1.y, v2.y));
+    if (std::abs(uv.z)!= 0)
+    {
+        return Vec3f(1.f-(uv.x+uv.y)/(float)uv.z, uv.y/(float)uv.z, uv.x/(float)uv.z);
+    }
+    return Vec3f(-1,1,1);
 }
 
 void parallel_triangle(Vec2i* t, TGAImage &image, TGAColor color)
@@ -68,8 +70,8 @@ void parallel_triangle(Vec2i* t, TGAImage &image, TGAColor color)
     for (int i=0; i<3; i++) 
         for (int j=0; j<2; j++) 
         { 
-            lb.raw[j] = std::max(0, std::min(lb.raw[j], t[i].raw[j])); 
-            rt.raw[j] = std::min(clamp.raw[j], std::max(rt.raw[j], t[i].raw[j])); 
+            lb[j] = std::max(0, std::min(lb[j], t[i][j])); 
+            rt[j] = std::min(clamp[j], std::max(rt[j], t[i][j])); 
         } 
 
     Vec2i p; 
@@ -158,7 +160,7 @@ int main(int argc, char** argv)
             t[j].x = (v.x+1.)*width/2.;
             t[j].y = (v.y+1.)*height/2.;
         }
-        Vec3f n = (w[2] - w[0]) ^ (w[1] - w[0]);
+        Vec3f n = cross((w[2] - w[0]), (w[1] - w[0]));
         n.normalize();
         float intensity = n * Vec3f(.0f, .0f, -1.0f);
         if (intensity > .0f)

@@ -13,7 +13,7 @@ Model::Model(const char *filename) : verts_(), faces_() {
     while (!in.eof()) {
         std::getline(in, line);
         std::istringstream iss(line.c_str());
-        char trash;
+        std::string trash;
         if (!line.compare(0, 2, "v ")) {
             iss >> trash;
             Vec3f v;
@@ -21,9 +21,9 @@ Model::Model(const char *filename) : verts_(), faces_() {
             verts_.push_back(v);
         } else if (!line.compare(0, 2, "f ")) {
             std::vector<int> f;
-            int itrash, idx;
+            int idx;
             iss >> trash;
-            while (iss >> idx >> trash >> itrash >> trash >> itrash) {
+            while (iss >> idx >> trash) {
                 idx--; // in wavefront obj all indices start at 1, not zero
                 f.push_back(idx);
             }

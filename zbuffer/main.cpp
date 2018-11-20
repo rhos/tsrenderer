@@ -1,5 +1,5 @@
 #include <vector>
-#include <cmath>
+#include <algorithm>
 #include "tgaimage.h"
 #include "geometry.h"
 #include "model.h"
@@ -68,8 +68,8 @@ void triangle(Vec2i* t, TGAImage &image, TGAColor color)
     for (int i=0; i<3; i++) 
         for (int j=0; j<2; j++) 
         { 
-            lb.raw[j] = std::max(0, std::min(lb.raw[j], t[i].raw[j])); 
-            rt.raw[j] = std::min(clamp.raw[j], std::max(rt.raw[j], t[i].raw[j])); 
+            lb[j] = std::max(0, std::min(lb[j], t[i][j])); 
+            rt[j] = std::min(clamp[j], std::max(rt[j], t[i][j])); 
         } 
 
     Vec2i p; 

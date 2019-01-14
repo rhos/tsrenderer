@@ -57,17 +57,21 @@ Vec3f barycentric(Vec3i* t, Vec2i p)
     Vec3i vs[2];
     for (int i = 0; i < 2; ++i)
     {
-        vs[i].x = t[2][i] - t[0][i];
-        vs[i].y = t[2][i] - t[1][i];
-        vs[i].z = p[i] - t[2][i];
+        vs[i].x = t[1][i] - t[0][i];
+        vs[i].y = t[2][i] - t[0][i];
+        vs[i].z = t[0][i] - p[i];
     }
     auto uv = vs[0] ^ vs[1];
     if (uv.z == 0) 
         return Vec3f(-1,1,1);
-    return Vec3f(1.f-(uv.x+uv.y)/(float)uv.z, uv.y/(float)uv.z, uv.x/(float)uv.z);
+
+    return Vec3f(
+        1.f-(uv.x+uv.y)/(float)uv.z,
+        uv.x/(float)uv.z,
+        uv.y/(float)uv.z);
 }
 
-void triangle(Vec3i* t, int* zbuffer, TGAImage &image, Vec2i* uv, TGAImage &texture, float intensity)
+void triangle(Vec3i* t, int* zbuffer, TGAImage &image, Vec2f* uv, TGAImage &texture, float intensity)
 {
     Vec2i lb(image.get_width()-1,  image.get_height()-1); 
     Vec2i rt(0, 0); 
@@ -85,7 +89,8 @@ void triangle(Vec3i* t, int* zbuffer, TGAImage &image, Vec2i* uv, TGAImage &text
         { 
             Vec3f bc  = barycentric(t, p); 
             if (bc.x<0 || bc.y<0 || bc.z<0) continue; 
-            int zval = 0, uval = 0, vval = 0;
+            int zval = 0;
+            float uval = 0, vval = 0;
             for(int i = 0; i < 3; ++i) 
             {
                 zval += t[i].z*bc[i];
@@ -123,7 +128,7 @@ int main(int argc, char** argv)
         std::vector<int> tface = model->tface(i);
         Vec3i t[3];
         Vec3f w[3];
-        Vec2i uv[3];
+        Vec2f uv[3];
         for (int j=0; j<3; j++) 
         {
             Vec3f v = model->vert(face[j]);

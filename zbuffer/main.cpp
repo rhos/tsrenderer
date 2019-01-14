@@ -133,6 +133,12 @@ int main(int argc, char** argv)
         {
             Vec3f v = model->vert(face[j]);
             w[j] = v;
+            
+            float c = 3;
+            v.x = v.x/(1-v.z/c);
+            v.y = v.y/(1-v.z/c);
+            v.z = v.z/(1-v.z/c);
+
             t[j].x = (v.x+1.)*width/2.;
             t[j].y = (v.y+1.)*height/2.;
             t[j].z = (v.z+1.)*depth/2.;

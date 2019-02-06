@@ -15,9 +15,11 @@ const int width  = 800,
           height = 800,
           depth  = 800;
 
-Vec3f light_dir = Vec3f(1, -1, 1).normalize();
+Vec3f light_dir = Vec3f(1, 1, 1).normalize();
 Vec3f eye(1, 1, 3);
 Vec3f center(0, 0, 0);
+
+Model *model;
 
 Matrix viewport(int x, int y, int w, int h)
 {
@@ -67,7 +69,7 @@ Vec3f barycentric(Vec3i* t, Vec2i p)
         uv.y/(float)uv.z);
 }
 
-void triangle(Vec3i* t, float* intensity, int* zbuffer, TGAImage &image)
+void triangle(Vec3i* t, Vec2i*uv, float* intensity, int* zbuffer, TGAImage &image)
 {
     Vec2i lb(image.get_width()-1,  image.get_height()-1); 
     Vec2i rt(0, 0); 
@@ -87,16 +89,19 @@ void triangle(Vec3i* t, float* intensity, int* zbuffer, TGAImage &image)
             if (bc.x<0 || bc.y<0 || bc.z<0) continue; 
             int zval = 0;
             float ival = 0;
+            int uval = 0, vval = 0;
             for(int i = 0; i < 3; ++i) 
             {
                 zval += t[i].z*bc[i];
                 ival += intensity[i]*bc[i];
+                uval += uv[i].x*bc[i];
+                vval += uv[i].y*bc[i];
             }
             int zind = p.x + p.y * width;
             if(zval >= zbuffer[zind])
             {
                 zbuffer[zind] = zval;
-                auto color = white;
+                auto color = model->diffuse(Vec2i(uval,vval));
                 image.set(p.x, p.y, color*ival); 
             }
         } 
@@ -104,7 +109,7 @@ void triangle(Vec3i* t, float* intensity, int* zbuffer, TGAImage &image)
 
 int main(int argc, char **argv)
 {
-    Model *model = argc == 2 ? 
+    model = argc == 2 ? 
         new Model(argv[1]) : 
         new Model("obj/african_head.obj");
 
@@ -115,9 +120,11 @@ int main(int argc, char **argv)
         zbuffer[i] = -std::numeric_limits<int>::max();
 
     Matrix ModelView = lookat(eye, center, Vec3f(0, 1, 0));
+
     Matrix Projection = Matrix::identity(4);
-    Matrix ViewPort = viewport(width / 8, height / 8, width * 3 / 4, height * 3 / 4);
     Projection[3][2] = -1.f / (eye - center).norm();
+
+    Matrix ViewPort = viewport(0,0,width,height);
 
     for (int i = 0; i < model->nfaces(); i++)
     {
@@ -132,7 +139,7 @@ int main(int argc, char **argv)
             intensity[j] = model->norm(i, j) * light_dir;
             uv[j] = model->uv(i, j);
         }
-        triangle(t, intensity, zbuffer, image);
+        triangle(t, uv, intensity, zbuffer, image);
     }
     image.flip_vertically();
     image.write_tga_file("output.tga");

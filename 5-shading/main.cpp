@@ -7,10 +7,10 @@
 
 const int width  = 800,
           height = 800,
-          depth  = 800;
+          depth  = 255;
 
 Vec3f light_dir = Vec3f(1, 1, 1).normalize();
-Vec3f eye(1, 1, 3);
+Vec3f eye(1, -1, 5);
 Vec3f center(0, 0, 0);
 
 Model *model;
@@ -18,25 +18,39 @@ Model *model;
 struct GouraudShader : public IShader 
 {
     Vec3f intensity_vec;
+    Vec2i uv_vec[3];
 
     virtual Vec3f vertex(int iface, int ivert) 
     {
         auto face = model->face(iface);
-        auto vert = model->vert(ivert);
+        auto vert = model->vert(face[ivert]);
         auto gl_Vertex = Vec3f(Viewport*Projection*ModelView*Matrix(vert));
-        intensity_vec[ivert] = std::max(0.f, model->norm(iface, ivert)*light_dir); // get diffuse lighting intensity
+        intensity_vec[ivert] = model->norm(iface, ivert)*light_dir;
+        uv_vec[ivert] = model->uv(iface, ivert);
         return gl_Vertex;
     }
 
     virtual bool fragment(Vec3f bc, TGAColor &color) 
     {
         float intensity = .0f;
+        int uval = 0, vval = 0;
         for(int i = 0; i< 3; ++i)
-            intensity = intensity_vec[i] * bc[i];
-        color = TGAColor(255, 255, 255);
-        return true;
-    }
+        {
+            intensity += intensity_vec[i] * bc[i];
+            uval += uv_vec[i].x*bc[i];
+            vval += uv_vec[i].y*bc[i];
+        }
 
+        if (intensity>.85) intensity = 1;
+        else if (intensity>.60) intensity = .80;
+        else if (intensity>.45) intensity = .60;
+        else if (intensity>.30) intensity = .45;
+        else if (intensity>.15) intensity = .30;
+        else intensity = 0;
+        color = model->diffuse(Vec2i(uval,vval)) * intensity;
+        return true; 
+    }
+    
 };
 
 int main(int argc, char **argv)

@@ -102,7 +102,7 @@ void triangle(Vec3i* t, Vec2i*uv, float* intensity, int* zbuffer, TGAImage &imag
             {
                 zbuffer[zind] = zval;
                 auto color = model->diffuse(Vec2i(uval,vval));
-                image.set(p.x, p.y, color*ival); 
+                image.set(p.x, p.y, color*intensity[0]); 
             }
         } 
 }

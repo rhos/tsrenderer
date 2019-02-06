@@ -91,7 +91,7 @@ void triangle(Vec3i* t, IShader& shader, TGAImage &zbuffer, TGAImage &image)
             int zval = 0;
             for(int i = 0; i < 3; ++i) 
                 zval += t[i].z*bc[i];
-            //if(zval < zbuffer.get(p.x, p.y).bgra[0]) continue;
+            if(zval <= zbuffer.get(p.x, p.y).bgra[0]) continue;
 
             TGAColor color;
             bool valid = shader.fragment(bc, color);

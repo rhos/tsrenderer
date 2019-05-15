@@ -120,7 +120,7 @@ int main(int argc, char** argv)
 
     int* zbuffer = new int[width * height];
     for (int i = 0; i < width * height; ++i)
-        zbuffer[i] = -std::numeric_limits<int>::max();
+        zbuffer[i] = std::numeric_limits<int>::min();
 
     for (int i=0; i<model->nfaces(); i++)
     {

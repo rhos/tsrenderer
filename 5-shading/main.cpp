@@ -26,9 +26,12 @@ struct GouraudShader : public IShader
     {
         auto face = model->face(iface);
         auto vert = model->vert(face[ivert]);
+
         auto gl_Vertex = Vec3f(Viewport*m*Matrix(vert));
+
         intensity_vec[ivert] = model->normal(iface, ivert)*light_dir;
         uv_vec[ivert] = model->uv(iface, ivert);
+        
         return gl_Vertex;
     }
 
@@ -60,9 +63,9 @@ struct GouraudShader : public IShader
         color = model->diffuse(uv);
         for (int i=0; i<3; i++) 
             color.bgra[i] = std::min<float>(5 + color.bgra[i]*(diff + .6*spec), 255);
+        //color = white;
         return true; 
     }
-    
 };
 
 int main(int argc, char **argv)
@@ -75,6 +78,7 @@ int main(int argc, char **argv)
     TGAImage zbuffer(width, height, TGAImage::GRAYSCALE);
 
     lookat(eye, center, Vec3f(0, 1, 0));
+    auto modelM = Matrix::identity(4);
     projection(-1.f / (eye - center).norm());
     viewport(0,0,width,height, depth);
 
